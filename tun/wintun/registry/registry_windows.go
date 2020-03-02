@@ -8,9 +8,9 @@ package registry
 import (
 	"errors"
 	"fmt"
+	"github.com/anjmao/realtime"
 	"runtime"
 	"strings"
-	"time"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -40,7 +40,7 @@ func OpenKeyWait(k registry.Key, path string, access uint32, timeout time.Durati
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 
-	deadline := time.Now().Add(timeout)
+	deadline := realtime.Now().Add(timeout)
 	pathSpl := strings.Split(path, "\\")
 	for i := 0; ; i++ {
 		keyName := pathSpl[i]
@@ -67,7 +67,7 @@ func OpenKeyWait(k registry.Key, path string, access uint32, timeout time.Durati
 			}
 			key, err = registry.OpenKey(k, keyName, accessFlags)
 			if err == windows.ERROR_FILE_NOT_FOUND || err == windows.ERROR_PATH_NOT_FOUND {
-				timeout := time.Until(deadline) / time.Millisecond
+				timeout := realtime.Until(deadline) / time.Millisecond
 				if timeout < 0 {
 					timeout = 0
 				}
@@ -144,7 +144,7 @@ func getValueRetry(key registry.Key, name string, buf []byte, timeout time.Durat
 	}
 	defer windows.CloseHandle(event)
 
-	deadline := time.Now().Add(timeout)
+	deadline := realtime.Now().Add(timeout)
 	for {
 		err := regNotifyChangeKeyValue(windows.Handle(key), false, REG_NOTIFY_CHANGE_LAST_SET, windows.Handle(event), true)
 		if err != nil {
@@ -153,7 +153,7 @@ func getValueRetry(key registry.Key, name string, buf []byte, timeout time.Durat
 
 		buf, valueType, err := getValue(key, name, buf)
 		if err == windows.ERROR_FILE_NOT_FOUND || err == windows.ERROR_PATH_NOT_FOUND {
-			timeout := time.Until(deadline) / time.Millisecond
+			timeout := realtime.Until(deadline) / time.Millisecond
 			if timeout < 0 {
 				timeout = 0
 			}

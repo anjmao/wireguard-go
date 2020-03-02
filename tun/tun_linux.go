@@ -19,6 +19,8 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/anjmao/realtime"
+
 	"golang.org/x/net/ipv6"
 	"golang.org/x/sys/unix"
 	"golang.zx2c4.com/wireguard/rwcancel"
@@ -71,7 +73,7 @@ func (tun *NativeTun) routineHackListener() {
 			return
 		}
 		select {
-		case <-time.After(time.Second):
+		case <-realtime.After(time.Second):
 		case <-tun.statusListenersShutdown:
 			return
 		}

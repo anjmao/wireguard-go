@@ -12,6 +12,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/anjmao/realtime"
 )
 
 /* This Timer structure and related functions should roughly copy the interface of
@@ -19,7 +21,7 @@ import (
  */
 
 type Timer struct {
-	*time.Timer
+	*realtime.Timer
 	modifyingLock sync.RWMutex
 	runningLock   sync.Mutex
 	isPending     bool
@@ -27,7 +29,7 @@ type Timer struct {
 
 func (peer *Peer) NewTimer(expirationFunction func(*Peer)) *Timer {
 	timer := &Timer{}
-	timer.Timer = time.AfterFunc(time.Hour, func() {
+	timer.Timer = realtime.AfterFunc(time.Hour, func() {
 		timer.runningLock.Lock()
 
 		timer.modifyingLock.Lock()
@@ -190,7 +192,7 @@ func (peer *Peer) timersHandshakeComplete() {
 	}
 	atomic.StoreUint32(&peer.timers.handshakeAttempts, 0)
 	peer.timers.sentLastMinuteHandshake.Set(false)
-	atomic.StoreInt64(&peer.stats.lastHandshakeNano, time.Now().UnixNano())
+	atomic.StoreInt64(&peer.stats.lastHandshakeNano, int64(time.Now().UnixNano()))
 }
 
 /* Should be called after an ephemeral key is created, which is before sending a handshake response or after receiving a handshake response. */

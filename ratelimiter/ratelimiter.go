@@ -9,6 +9,8 @@ import (
 	"net"
 	"sync"
 	"time"
+
+	"github.com/anjmao/realtime"
 )
 
 const (
@@ -21,7 +23,7 @@ const (
 
 type RatelimiterEntry struct {
 	sync.Mutex
-	lastTime time.Time
+	lastTime realtime.Time
 	tokens   int64
 }
 
@@ -58,14 +60,14 @@ func (rate *Ratelimiter) Init() {
 	// start garbage collection routine
 
 	go func() {
-		ticker := time.NewTicker(time.Second)
+		ticker := realtime.NewTicker(time.Second)
 		ticker.Stop()
 		for {
 			select {
 			case _, ok := <-rate.stopReset:
 				ticker.Stop()
 				if ok {
-					ticker = time.NewTicker(time.Second)
+					ticker = realtime.NewTicker(time.Second)
 				} else {
 					return
 				}
@@ -76,7 +78,7 @@ func (rate *Ratelimiter) Init() {
 
 					for key, entry := range rate.tableIPv4 {
 						entry.Lock()
-						if time.Since(entry.lastTime) > garbageCollectTime {
+						if realtime.Since(entry.lastTime) > garbageCollectTime {
 							delete(rate.tableIPv4, key)
 						}
 						entry.Unlock()
@@ -84,7 +86,7 @@ func (rate *Ratelimiter) Init() {
 
 					for key, entry := range rate.tableIPv6 {
 						entry.Lock()
-						if time.Since(entry.lastTime) > garbageCollectTime {
+						if realtime.Since(entry.lastTime) > garbageCollectTime {
 							delete(rate.tableIPv6, key)
 						}
 						entry.Unlock()
@@ -126,7 +128,7 @@ func (rate *Ratelimiter) Allow(ip net.IP) bool {
 	if entry == nil {
 		entry = new(RatelimiterEntry)
 		entry.tokens = maxTokens - packetCost
-		entry.lastTime = time.Now()
+		entry.lastTime = realtime.Now()
 		rate.Lock()
 		if IPv4 != nil {
 			rate.tableIPv4[keyIPv4] = entry
@@ -146,7 +148,7 @@ func (rate *Ratelimiter) Allow(ip net.IP) bool {
 	// add tokens to entry
 
 	entry.Lock()
-	now := time.Now()
+	now := realtime.Now()
 	entry.tokens += now.Sub(entry.lastTime).Nanoseconds()
 	entry.lastTime = now
 	if entry.tokens > maxTokens {

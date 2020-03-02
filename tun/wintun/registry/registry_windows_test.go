@@ -6,8 +6,8 @@
 package registry
 
 import (
+	"github.com/anjmao/realtime"
 	"testing"
-	"time"
 
 	"golang.org/x/sys/windows/registry"
 )
@@ -21,7 +21,7 @@ func Test_WaitForKey(t *testing.T) {
 	registry.DeleteKey(keyRoot, path)
 	registry.DeleteKey(keyRoot, pathRoot)
 	go func() {
-		time.Sleep(time.Second * 1)
+		realtime.Sleep(time.Second * 1)
 		key, _, err := registry.CreateKey(keyRoot, pathFake, registry.QUERY_VALUE)
 		if err != nil {
 			t.Errorf("Error creating registry key: %v", err)
@@ -52,15 +52,15 @@ func Test_GetValueWait(t *testing.T) {
 	registry.DeleteKey(keyRoot, path)
 	registry.DeleteKey(keyRoot, pathRoot)
 	go func() {
-		time.Sleep(time.Second * 1)
+		realtime.Sleep(time.Second * 1)
 		key, _, err := registry.CreateKey(keyRoot, path, registry.SET_VALUE)
 		if err != nil {
 			t.Errorf("Error creating registry key: %v", err)
 		}
-		time.Sleep(time.Second * 1)
+		realtime.Sleep(time.Second * 1)
 		key.SetStringValue("name1", "eulav")
 		key.SetExpandStringValue("name2", "value")
-		time.Sleep(time.Second * 1)
+		realtime.Sleep(time.Second * 1)
 		key.SetDWordValue("name3", ^uint32(123))
 		key.SetDWordValue("name4", 123)
 		key.Close()

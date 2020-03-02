@@ -9,6 +9,8 @@ import (
 	"net"
 	"testing"
 	"time"
+
+	"github.com/anjmao/realtime"
 )
 
 type RatelimiterResult struct {
@@ -92,7 +94,7 @@ func TestRatelimiter(t *testing.T) {
 	ratelimiter.Init()
 
 	for i, res := range expectedResults {
-		time.Sleep(res.wait)
+		realtime.Sleep(res.wait)
 		for _, ip := range ips {
 			allowed := ratelimiter.Allow(ip)
 			if allowed != res.allowed {

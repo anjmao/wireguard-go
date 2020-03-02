@@ -16,6 +16,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/anjmao/realtime"
+
 	"golang.zx2c4.com/wireguard/tun"
 )
 
@@ -61,7 +63,7 @@ endpoint=127.0.0.1:53511`
 			if !bytes.Equal(msg2to1, msgRecv) {
 				t.Error("ping did not transit correctly")
 			}
-		case <-time.After(300 * time.Millisecond):
+		case <-realtime.After(300 * time.Millisecond):
 			t.Error("ping did not transit")
 		}
 	})
@@ -74,7 +76,7 @@ endpoint=127.0.0.1:53511`
 			if !bytes.Equal(msg1to2, msgRecv) {
 				t.Error("return ping did not transit correctly")
 			}
-		case <-time.After(300 * time.Millisecond):
+		case <-realtime.After(300 * time.Millisecond):
 			t.Error("return ping did not transit")
 		}
 	})

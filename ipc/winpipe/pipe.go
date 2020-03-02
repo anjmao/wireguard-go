@@ -12,11 +12,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/anjmao/realtime"
 	"io"
 	"net"
 	"os"
 	"runtime"
-	"time"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -105,7 +105,7 @@ func (f *win32Pipe) RemoteAddr() net.Addr {
 	return pipeAddress(f.path)
 }
 
-func (f *win32Pipe) SetDeadline(t time.Time) error {
+func (f *win32Pipe) SetDeadline(t realtime.Time) error {
 	f.SetReadDeadline(t)
 	f.SetWriteDeadline(t)
 	return nil
@@ -187,7 +187,7 @@ func tryDialPipe(ctx context.Context, path *string) (windows.Handle, error) {
 			}
 			// Wait 10 msec and try again. This is a rather simplistic
 			// view, as we always try each 10 milliseconds.
-			time.Sleep(time.Millisecond * 10)
+			realtime.Sleep(time.Millisecond * 10)
 		}
 	}
 }
@@ -196,11 +196,11 @@ func tryDialPipe(ctx context.Context, path *string) (windows.Handle, error) {
 // takes longer than the specified duration. If timeout is nil, then we use
 // a default timeout of 2 seconds.  (We do not use WaitNamedPipe.)
 func DialPipe(path string, timeout *time.Duration, expectedOwner *windows.SID) (net.Conn, error) {
-	var absTimeout time.Time
+	var absTimeout realtime.Time
 	if timeout != nil {
-		absTimeout = time.Now().Add(*timeout)
+		absTimeout = realtime.Now().Add(*timeout)
 	} else {
-		absTimeout = time.Now().Add(time.Second * 2)
+		absTimeout = realtime.Now().Add(time.Second * 2)
 	}
 	ctx, _ := context.WithDeadline(context.Background(), absTimeout)
 	conn, err := DialPipeContext(ctx, path, expectedOwner)

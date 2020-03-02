@@ -11,7 +11,7 @@ import (
 	"net"
 	"sync"
 	"sync/atomic"
-	"time"
+	"github.com/anjmao/realtime"
 
 	"golang.org/x/crypto/chacha20poly1305"
 	"golang.org/x/net/ipv4"
@@ -129,18 +129,18 @@ func (peer *Peer) SendHandshakeInitiation(isRetry bool) error {
 	}
 
 	peer.handshake.mutex.RLock()
-	if time.Since(peer.handshake.lastSentHandshake) < RekeyTimeout {
+	if realtime.Since(peer.handshake.lastSentHandshake) < RekeyTimeout {
 		peer.handshake.mutex.RUnlock()
 		return nil
 	}
 	peer.handshake.mutex.RUnlock()
 
 	peer.handshake.mutex.Lock()
-	if time.Since(peer.handshake.lastSentHandshake) < RekeyTimeout {
+	if realtime.Since(peer.handshake.lastSentHandshake) < RekeyTimeout {
 		peer.handshake.mutex.Unlock()
 		return nil
 	}
-	peer.handshake.lastSentHandshake = time.Now()
+	peer.handshake.lastSentHandshake = realtime.Now()
 	peer.handshake.mutex.Unlock()
 
 	peer.device.log.Debug.Println(peer, "- Sending handshake initiation")
@@ -171,7 +171,7 @@ func (peer *Peer) SendHandshakeInitiation(isRetry bool) error {
 
 func (peer *Peer) SendHandshakeResponse() error {
 	peer.handshake.mutex.Lock()
-	peer.handshake.lastSentHandshake = time.Now()
+	peer.handshake.lastSentHandshake = realtime.Now()
 	peer.handshake.mutex.Unlock()
 
 	peer.device.log.Debug.Println(peer, "- Sending handshake response")
@@ -229,7 +229,7 @@ func (peer *Peer) keepKeyFreshSending() {
 		return
 	}
 	nonce := atomic.LoadUint64(&keypair.sendNonce)
-	if nonce > RekeyAfterMessages || (keypair.isInitiator && time.Since(keypair.created) > RekeyAfterTime) {
+	if nonce > RekeyAfterMessages || (keypair.isInitiator && realtime.Since(keypair.created) > RekeyAfterTime) {
 		peer.SendHandshakeInitiation(false)
 	}
 }
@@ -387,7 +387,7 @@ func (peer *Peer) RoutineNonce() {
 
 				keypair = peer.keypairs.Current()
 				if keypair != nil && keypair.sendNonce < RejectAfterMessages {
-					if time.Since(keypair.created) < RejectAfterTime {
+					if realtime.Since(keypair.created) < RejectAfterTime {
 						break
 					}
 				}

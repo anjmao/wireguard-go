@@ -12,6 +12,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/anjmao/realtime"
 )
 
 const (
@@ -199,7 +201,7 @@ func (peer *Peer) Start() {
 	peer.queue.inbound = make(chan *QueueInboundElement, QueueInboundSize)
 
 	peer.timersInit()
-	peer.handshake.lastSentHandshake = time.Now().Add(-(RekeyTimeout + time.Second))
+	peer.handshake.lastSentHandshake = realtime.Now().Add(-(RekeyTimeout + time.Second))
 	peer.signals.newKeypairArrived = make(chan struct{}, 1)
 	peer.signals.flushNonceQueue = make(chan struct{}, 1)
 
@@ -245,7 +247,7 @@ func (peer *Peer) ExpireCurrentKeypairs() {
 	peer.device.indexTable.Delete(handshake.localIndex)
 	handshake.Clear()
 	handshake.mutex.Unlock()
-	peer.handshake.lastSentHandshake = time.Now().Add(-(RekeyTimeout + time.Second))
+	peer.handshake.lastSentHandshake = realtime.Now().Add(-(RekeyTimeout + time.Second))
 
 	keypairs := &peer.keypairs
 	keypairs.Lock()

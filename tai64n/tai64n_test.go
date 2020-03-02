@@ -8,6 +8,8 @@ package tai64n
 import (
 	"testing"
 	"time"
+
+	"github.com/anjmao/realtime"
 )
 
 /* Testing the essential property of the timestamp
@@ -20,7 +22,7 @@ func TestMonotonic(t *testing.T) {
 		if next.After(old) {
 			t.Error("Whitening insufficient")
 		}
-		time.Sleep(time.Duration(whitenerMask)/time.Nanosecond + 1)
+		realtime.Sleep(time.Duration(whitenerMask)/time.Nanosecond + 1)
 		next = Now()
 		if !next.After(old) {
 			t.Error("Not monotonically increasing on whitened nano-second scale")

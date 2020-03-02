@@ -9,7 +9,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"sync"
-	"time"
+	"github.com/anjmao/realtime"
 
 	"golang.org/x/crypto/blake2s"
 	"golang.org/x/crypto/chacha20poly1305"
@@ -22,7 +22,7 @@ type CookieChecker struct {
 	}
 	mac2 struct {
 		secret        [blake2s.Size]byte
-		secretSet     time.Time
+		secretSet     realtime.Time
 		encryptionKey [chacha20poly1305.KeySize]byte
 	}
 }
@@ -34,7 +34,7 @@ type CookieGenerator struct {
 	}
 	mac2 struct {
 		cookie        [blake2s.Size128]byte
-		cookieSet     time.Time
+		cookieSet     realtime.Time
 		hasLastMAC1   bool
 		lastMAC1      [blake2s.Size128]byte
 		encryptionKey [chacha20poly1305.KeySize]byte
@@ -63,7 +63,7 @@ func (st *CookieChecker) Init(pk NoisePublicKey) {
 		hash.Sum(st.mac2.encryptionKey[:0])
 	}()
 
-	st.mac2.secretSet = time.Time{}
+	st.mac2.secretSet = realtime.Time{}
 }
 
 func (st *CookieChecker) CheckMAC1(msg []byte) bool {
@@ -87,7 +87,7 @@ func (st *CookieChecker) CheckMAC2(msg []byte, src []byte) bool {
 	st.RLock()
 	defer st.RUnlock()
 
-	if time.Since(st.mac2.secretSet) > CookieRefreshTime {
+	if realtime.Since(st.mac2.secretSet) > CookieRefreshTime {
 		return false
 	}
 
@@ -124,7 +124,7 @@ func (st *CookieChecker) CreateReply(
 
 	// refresh cookie secret
 
-	if time.Since(st.mac2.secretSet) > CookieRefreshTime {
+	if realtime.Since(st.mac2.secretSet) > CookieRefreshTime {
 		st.RUnlock()
 		st.Lock()
 		_, err := rand.Read(st.mac2.secret[:])
@@ -132,7 +132,7 @@ func (st *CookieChecker) CreateReply(
 			st.Unlock()
 			return nil, err
 		}
-		st.mac2.secretSet = time.Now()
+		st.mac2.secretSet = realtime.Now()
 		st.Unlock()
 		st.RLock()
 	}
@@ -189,7 +189,7 @@ func (st *CookieGenerator) Init(pk NoisePublicKey) {
 		hash.Sum(st.mac2.encryptionKey[:0])
 	}()
 
-	st.mac2.cookieSet = time.Time{}
+	st.mac2.cookieSet = realtime.Time{}
 }
 
 func (st *CookieGenerator) ConsumeReply(msg *MessageCookieReply) bool {
@@ -209,7 +209,7 @@ func (st *CookieGenerator) ConsumeReply(msg *MessageCookieReply) bool {
 		return false
 	}
 
-	st.mac2.cookieSet = time.Now()
+	st.mac2.cookieSet = realtime.Now()
 	st.mac2.cookie = cookie
 	return true
 }
@@ -239,7 +239,7 @@ func (st *CookieGenerator) AddMacs(msg []byte) {
 
 	// set mac2
 
-	if time.Since(st.mac2.cookieSet) > CookieRefreshTime {
+	if realtime.Since(st.mac2.cookieSet) > CookieRefreshTime {
 		return
 	}
 

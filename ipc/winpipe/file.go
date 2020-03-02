@@ -9,11 +9,11 @@ package winpipe
 
 import (
 	"errors"
+	"github.com/anjmao/realtime"
 	"io"
 	"runtime"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"golang.org/x/sys/windows"
 )
@@ -95,7 +95,7 @@ type deadlineHandler struct {
 	setLock     sync.Mutex
 	channel     timeoutChan
 	channelLock sync.RWMutex
-	timer       *time.Timer
+	timer       *realtime.Timer
 	timedout    atomicBool
 }
 
@@ -265,11 +265,11 @@ func (f *win32File) Write(b []byte) (int, error) {
 	return n, err
 }
 
-func (f *win32File) SetReadDeadline(deadline time.Time) error {
+func (f *win32File) SetReadDeadline(deadline realtime.Time) error {
 	return f.readDeadline.set(deadline)
 }
 
-func (f *win32File) SetWriteDeadline(deadline time.Time) error {
+func (f *win32File) SetWriteDeadline(deadline realtime.Time) error {
 	return f.writeDeadline.set(deadline)
 }
 
@@ -281,7 +281,7 @@ func (f *win32File) Fd() uintptr {
 	return uintptr(f.handle)
 }
 
-func (d *deadlineHandler) set(deadline time.Time) error {
+func (d *deadlineHandler) set(deadline realtime.Time) error {
 	d.setLock.Lock()
 	defer d.setLock.Unlock()
 
@@ -310,11 +310,11 @@ func (d *deadlineHandler) set(deadline time.Time) error {
 		close(d.channel)
 	}
 
-	now := time.Now()
+	now := realtime.Now()
 	duration := deadline.Sub(now)
 	if deadline.After(now) {
 		// Deadline is in the future, set a timer to wait
-		d.timer = time.AfterFunc(duration, timeoutIO)
+		d.timer = realtime.AfterFunc(duration, timeoutIO)
 	} else {
 		// Deadline is in the past. Cancel all pending IO now.
 		timeoutIO()

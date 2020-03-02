@@ -9,7 +9,8 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
-	"time"
+
+	"github.com/anjmao/realtime"
 
 	"golang.zx2c4.com/wireguard/ratelimiter"
 	"golang.zx2c4.com/wireguard/tun"
@@ -187,7 +188,7 @@ func (device *Device) IsUnderLoad() bool {
 
 	// check if currently under load
 
-	now := time.Now()
+	now := realtime.Now()
 	underLoad := len(device.queue.handshake) >= UnderLoadQueueSize
 	if underLoad {
 		device.rate.underLoadUntil.Store(now.Add(UnderLoadAfterTime))
@@ -196,7 +197,7 @@ func (device *Device) IsUnderLoad() bool {
 
 	// check if recently under load
 
-	until := device.rate.underLoadUntil.Load().(time.Time)
+	until := device.rate.underLoadUntil.Load().(realtime.Time)
 	return until.After(now)
 }
 
@@ -275,7 +276,7 @@ func NewDevice(tunDevice tun.Device, logger *Logger) *Device {
 	device.peers.keyMap = make(map[NoisePublicKey]*Peer)
 
 	device.rate.limiter.Init()
-	device.rate.underLoadUntil.Store(time.Time{})
+	device.rate.underLoadUntil.Store(realtime.Time{})
 
 	device.indexTable.Init()
 	device.allowedips.Reset()
@@ -408,7 +409,7 @@ func (device *Device) SendKeepalivesToPeersWithCurrentKeypair() {
 	device.peers.RLock()
 	for _, peer := range device.peers.keyMap {
 		peer.keypairs.RLock()
-		sendKeepalive := peer.keypairs.current != nil && !peer.keypairs.current.created.Add(RejectAfterTime).Before(time.Now())
+		sendKeepalive := peer.keypairs.current != nil && !peer.keypairs.current.created.Add(RejectAfterTime).Before(realtime.Now())
 		peer.keypairs.RUnlock()
 		if sendKeepalive {
 			peer.SendKeepalive()

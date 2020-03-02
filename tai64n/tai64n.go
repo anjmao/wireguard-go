@@ -8,6 +8,7 @@ package tai64n
 import (
 	"bytes"
 	"encoding/binary"
+
 	"time"
 )
 

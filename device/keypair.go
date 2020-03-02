@@ -8,7 +8,7 @@ package device
 import (
 	"crypto/cipher"
 	"sync"
-	"time"
+	"github.com/anjmao/realtime"
 
 	"golang.zx2c4.com/wireguard/replay"
 )
@@ -26,7 +26,7 @@ type Keypair struct {
 	receive      cipher.AEAD
 	replayFilter replay.ReplayFilter
 	isInitiator  bool
-	created      time.Time
+	created      realtime.Time
 	localIndex   uint32
 	remoteIndex  uint32
 }

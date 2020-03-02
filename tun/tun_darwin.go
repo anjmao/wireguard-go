@@ -14,6 +14,8 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/anjmao/realtime"
+
 	"golang.org/x/net/ipv6"
 	"golang.org/x/sys/unix"
 )
@@ -49,7 +51,7 @@ func retryInterfaceByIndex(index int) (iface *net.Interface, err error) {
 		if err != nil {
 			if opErr, ok := err.(*net.OpError); ok {
 				if syscallErr, ok := opErr.Err.(*os.SyscallError); ok && syscallErr.Err == syscall.ENOMEM {
-					time.Sleep(time.Duration(i) * time.Second / 3)
+					realtime.Sleep(time.Duration(i) * time.Second / 3)
 					continue
 				}
 			}

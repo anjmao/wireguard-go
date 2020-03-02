@@ -8,8 +8,8 @@ package wintun
 import (
 	"errors"
 	"fmt"
+	"github.com/anjmao/realtime"
 	"strings"
-	"time"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -333,7 +333,7 @@ func (pool Pool) CreateInterface(ifname string, requestedGUID *windows.GUID) (wi
 	const pollTimeout = time.Millisecond * 50
 	for i := 0; i < int(waitForRegistryTimeout/pollTimeout); i++ {
 		if i != 0 {
-			time.Sleep(pollTimeout)
+			realtime.Sleep(pollTimeout)
 		}
 		netDevRegKey, err = devInfo.OpenDevRegKey(devInfoData, setupapi.DICS_FLAG_GLOBAL, 0, setupapi.DIREG_DRV, registry.SET_VALUE|registry.QUERY_VALUE|registry.NOTIFY)
 		if err == nil {

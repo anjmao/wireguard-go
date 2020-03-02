@@ -8,7 +8,7 @@ package device
 import (
 	"errors"
 	"sync"
-	"time"
+	"github.com/anjmao/realtime"
 
 	"golang.org/x/crypto/blake2s"
 	"golang.org/x/crypto/chacha20poly1305"
@@ -107,8 +107,8 @@ type Handshake struct {
 	remoteEphemeral           NoisePublicKey           // ephemeral public key
 	precomputedStaticStatic   [NoisePublicKeySize]byte // precomputed shared secret
 	lastTimestamp             tai64n.Timestamp
-	lastInitiationConsumption time.Time
-	lastSentHandshake         time.Time
+	lastInitiationConsumption realtime.Time
+	lastSentHandshake         realtime.Time
 }
 
 var (
@@ -301,7 +301,7 @@ func (device *Device) ConsumeMessageInitiation(msg *MessageInitiation) *Peer {
 
 	var ok bool
 	ok = timestamp.After(handshake.lastTimestamp)
-	ok = ok && time.Since(handshake.lastInitiationConsumption) > HandshakeInitationRate
+	ok = ok && realtime.Since(handshake.lastInitiationConsumption) > HandshakeInitationRate
 	handshake.mutex.RUnlock()
 	if !ok {
 		return nil
@@ -318,7 +318,7 @@ func (device *Device) ConsumeMessageInitiation(msg *MessageInitiation) *Peer {
 	if timestamp.After(handshake.lastTimestamp) {
 		handshake.lastTimestamp = timestamp
 	}
-	now := time.Now()
+	now := realtime.Now()
 	if now.After(handshake.lastInitiationConsumption) {
 		handshake.lastInitiationConsumption = now
 	}
@@ -545,7 +545,7 @@ func (peer *Peer) BeginSymmetricSession() error {
 	setZero(sendKey[:])
 	setZero(recvKey[:])
 
-	keypair.created = time.Now()
+	keypair.created = realtime.Now()
 	keypair.sendNonce = 0
 	keypair.replayFilter.Init()
 	keypair.isInitiator = isInitiator

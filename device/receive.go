@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
-	"time"
+	"github.com/anjmao/realtime"
 
 	"golang.org/x/crypto/chacha20poly1305"
 	"golang.org/x/net/ipv4"
@@ -79,7 +79,7 @@ func (peer *Peer) keepKeyFreshReceiving() {
 		return
 	}
 	keypair := peer.keypairs.Current()
-	if keypair != nil && keypair.isInitiator && time.Since(keypair.created) > (RejectAfterTime-KeepaliveTimeout-RekeyTimeout) {
+	if keypair != nil && keypair.isInitiator && realtime.Since(keypair.created) > (RejectAfterTime-KeepaliveTimeout-RekeyTimeout) {
 		peer.timers.sentLastMinuteHandshake.Set(true)
 		peer.SendHandshakeInitiation(false)
 	}
@@ -165,7 +165,7 @@ func (device *Device) RoutineReceiveIncoming(IP int, bind Bind) {
 
 			// check keypair expiry
 
-			if keypair.created.Add(RejectAfterTime).Before(time.Now()) {
+			if keypair.created.Add(RejectAfterTime).Before(realtime.Now()) {
 				continue
 			}
 
